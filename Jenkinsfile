@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = "my-springboot-app"
-        JAR_NAME = "myapp.jar"
-        REPO_URL = "git@github.com:tu-org/tu-repo-privado.git"
-        DEPLOY_PATH = "/home/ubuntu/deploy" // Ruta en tu EC2
+        APP_NAME = "library-cunoc"
+        JAR_NAME = "library_cunoc.jar"
+        REPO_URL = "https://github.com/mromer08/test-jenkins.git"
+        DEPLOY_PATH = "/home/manu/Documents/dev" // Ruta en tu EC2
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "development", credentialsId: "github-ssh-key", url: "${REPO_URL}"
+                git branch: "main", credentialsId: "git_PAT2", url: "${REPO_URL}"
             }
         }
 
@@ -32,9 +32,7 @@ pipeline {
                         mv target/*.jar ${DEPLOY_PATH}/${JAR_NAME}
                         
                         echo "🔹 Exportando variables de entorno..."
-                        export DB_HOST=${DB_HOST}
-                        export DB_USER=${DB_USER}
-                        export DB_PASSWORD=${DB_PASSWORD}
+                        export SUPER_SECRET=${SUPER_SECRET}
 
                         echo "🚀 Iniciando la nueva versión..."
                         nohup java -jar ${DEPLOY_PATH}/${JAR_NAME} > ${DEPLOY_PATH}/app.log 2>&1 &
