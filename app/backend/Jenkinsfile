@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = "library-cunoc"
+        APP_NAME = "library"
         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
-        REPO_URL = "https://github.com/mromer08/test-jenkins.git"
-        DEPLOY_PATH = "app/backend/target" // Ruta en tu EC2
+        DOCKER_IMAGE = "library-app"
+        DOCKER_CONTAINER = "library-container"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "main", credentialsId: "github_PAT", url: "${REPO_URL}"
+                git branch: "main", credentialsId: "github_PAT", url: "https://github.com/mromer08/test-jenkins.git"
             }
         }
 
@@ -27,25 +27,84 @@ pipeline {
             }
         }
 
-       stage('Deploy Application') {
+        stage('Build Docker Image') {
             steps {
-                withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
-                    script {
-                        sh """
-                            echo "🔹 Deteniendo proceso anterior..."
-                            pkill -f "${JAR_NAME}" || true
-                            
-
-                            echo "🔹 Exportando variable de entorno de manera segura..."
-                            export SUPER_SECRET=\$SUPER_SECRET
-
-                            echo "🚀 Iniciando la nueva versión..."
-                            nohup java -jar ${DEPLOY_PATH}/${JAR_NAME} > ${DEPLOY_PATH}/app.log 2>&1 &
-                        """
-                    }
+                script {
+                    sh """
+                        echo "🔹 Construyendo imagen Docker..."
+                        cd app/backend
+                        docker build -t ${DOCKER_IMAGE} .
+                    """
                 }
             }
         }
 
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    sh """
+                        echo "🔹 Eliminando contenedor anterior si existe..."
+                        docker-compose -f app/backend/docker-compose.yml down || true
+
+                        echo "🚀 Iniciando la nueva versión..."
+                        cd app/backend
+                        docker-compose up -d
+                    """
+                }
+            }
+        }
     }
 }
+
+
+// pipeline {
+//     agent any
+
+//     environment {
+//         APP_NAME = "library-cunoc"
+//         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
+//         REPO_URL = "https://github.com/mromer08/test-jenkins.git"
+//         DEPLOY_PATH = "app/backend/target" // Ruta en tu EC2
+//     }
+
+//     stages {
+//         stage('Checkout Code') {
+//             steps {
+//                 git branch: "main", credentialsId: "github_PAT", url: "${REPO_URL}"
+//             }
+//         }
+
+//         stage('Build Application') {
+//             steps {
+//                 script {
+//                     sh """
+//                         echo "🔹 Construyendo aplicación con Maven..."
+//                         cd app/backend
+//                         ./mvnw clean package -DskipTests
+//                     """
+//                 }
+//             }
+//         }
+
+//        stage('Deploy Application') {
+//             steps {
+//                 withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
+//                     script {
+//                         sh """
+//                             echo "🔹 Deteniendo proceso anterior..."
+//                             pkill -f "${JAR_NAME}" || true
+                            
+
+//                             echo "🔹 Exportando variable de entorno de manera segura..."
+//                             export SUPER_SECRET=\$SUPER_SECRET
+
+//                             echo "🚀 Iniciando la nueva versión..."
+//                             nohup java -jar ${DEPLOY_PATH}/${JAR_NAME} > ${DEPLOY_PATH}/app.log 2>&1 &
+//                         """
+//                     }
+//                 }
+//             }
+//         }
+
+//     }
+// }
