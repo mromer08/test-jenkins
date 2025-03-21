@@ -44,11 +44,11 @@ pipeline {
                 script {
                     sh """
                         echo "🔹 Eliminando contenedor anterior si existe..."
-                        docker-compose -f app/backend/docker-compose.yml down || true
+                        docker compose -f app/backend/docker-compose.yml down || true
 
                         echo "🚀 Iniciando la nueva versión..."
                         cd app/backend
-                        docker-compose up -d
+                        docker compose up -d
                     """
                 }
             }
