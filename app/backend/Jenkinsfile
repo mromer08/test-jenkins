@@ -17,7 +17,13 @@ pipeline {
 
         stage('Build Application') {
             steps {
-                sh './app/backend/mvnw clean package -DskipTests'
+                script {
+                    sh """
+                        echo "🔹 Construyendo aplicación con Maven..."
+                        cd app/backend
+                        ./mvnw clean package -DskipTests
+                    """
+                }
             }
         }
 
@@ -29,7 +35,7 @@ pipeline {
                         pkill -f "${JAR_NAME}" || true
                         
                         echo "🔹 Moviendo el nuevo JAR a ${DEPLOY_PATH}..."
-                        mv target/*.jar ${DEPLOY_PATH}/${JAR_NAME}
+                        mv app/backend/target/*.jar ${DEPLOY_PATH}/${JAR_NAME}
                         
                         echo "🔹 Exportando variables de entorno..."
                         export SUPER_SECRET=${SUPER_SECRET}
