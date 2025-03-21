@@ -27,24 +27,27 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
-            steps {
-                script {
-                    sh """
-                        echo "🔹 Deteniendo proceso anterior..."
-                        pkill -f "${JAR_NAME}" || true
-                        
-                        echo "🔹 Moviendo el nuevo JAR a ${DEPLOY_PATH}..."
-                        mv app/backend/target/*.jar ${DEPLOY_PATH}/${JAR_NAME}
-                        
-                        echo "🔹 Exportando variables de entorno..."
-                        export SUPER_SECRET=${SUPER_SECRET}
+stage('Deploy Application') {
+    steps {
+        withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
+            script {
+                sh """
+                    echo "🔹 Deteniendo proceso anterior..."
+                    pkill -f "${JAR_NAME}" || true
 
-                        echo "🚀 Iniciando la nueva versión..."
-                        nohup java -jar ${DEPLOY_PATH}/${JAR_NAME} > ${DEPLOY_PATH}/app.log 2>&1 &
-                    """
-                }
+                    echo "🔹 Moviendo el nuevo JAR a ${DEPLOY_PATH}..."
+                    mv app/backend/target/*.jar ${DEPLOY_PATH}/${JAR_NAME}
+
+                    echo "🔹 Exportando variables de entorno..."
+                    export SUPER_SECRET=${SUPER_SECRET}
+
+                    echo "🚀 Iniciando la nueva versión..."
+                    nohup java -jar ${DEPLOY_PATH}/${JAR_NAME} > ${DEPLOY_PATH}/app.log 2>&1 &
+                """
             }
         }
+    }
+}
+
     }
 }
