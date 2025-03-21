@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         APP_NAME = "library-cunoc"
-        JAR_NAME = "library_cunoc.jar"
+        JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
         REPO_URL = "https://github.com/mromer08/test-jenkins.git"
         DEPLOY_PATH = "app/backend/target/" // Ruta en tu EC2
     }
@@ -35,8 +35,6 @@ pipeline {
                             echo "🔹 Deteniendo proceso anterior..."
                             pkill -f "${JAR_NAME}" || true
                             
-                            echo "🔹 Moviendo el nuevo JAR a ${DEPLOY_PATH}..."
-                            mv app/backend/target/*.jar ${DEPLOY_PATH}/${JAR_NAME}
 
                             echo "🔹 Exportando variable de entorno de manera segura..."
                             export SUPER_SECRET=\$SUPER_SECRET
