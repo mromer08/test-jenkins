@@ -5,7 +5,7 @@ pipeline {
         APP_NAME = "library-cunoc"
         JAR_NAME = "library_cunoc.jar"
         REPO_URL = "https://github.com/mromer08/test-jenkins.git"
-        DEPLOY_PATH = "/home/manu/Documents/dev" // Ruta en tu EC2
+        DEPLOY_PATH = "/home/ubuntu/dev" // Ruta en tu EC2
     }
 
     stages {
@@ -17,7 +17,7 @@ pipeline {
 
         stage('Build Application') {
             steps {
-                sh './mvnw clean package -DskipTests'
+                sh './app/backend/mvnw clean package -DskipTests'
             }
         }
 
