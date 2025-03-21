@@ -5,7 +5,7 @@ pipeline {
         APP_NAME = "library-cunoc"
         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
         REPO_URL = "https://github.com/mromer08/test-jenkins.git"
-        DEPLOY_PATH = "app/backend/target/" // Ruta en tu EC2
+        DEPLOY_PATH = "app/backend/target" // Ruta en tu EC2
     }
 
     stages {
