@@ -41,15 +41,20 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                script {
-                    sh """
-                        echo "🔹 Eliminando contenedor anterior si existe..."
-                        docker compose -f app/backend/docker-compose.yml down || true
+                withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
+                    script {
+                        sh """
+                            echo "🔹 Creando archivo .env con variables de entorno..."
+                            echo "SUPER_SECRET=\$SUPER_SECRET" > app/backend/.env
 
-                        echo "🚀 Iniciando la nueva versión..."
-                        cd app/backend
-                        docker compose up -d
-                    """
+                            echo "🔹 Eliminando contenedor anterior si existe..."
+                            docker compose -f app/backend/docker-compose.yml down || true
+
+                            echo "🚀 Iniciando la nueva versión..."
+                            cd app/backend
+                            docker compose up -d
+                        """
+                    }
                 }
             }
         }

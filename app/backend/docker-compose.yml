@@ -6,6 +6,6 @@ services:
     container_name: library-container
     ports:
       - "3000:3000"
-    environment:
-      - SUPER_SECRET=${SUPER_SECRET}
+    env_file:
+      - .env
     restart: always
