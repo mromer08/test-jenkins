@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        echo "🔹 Construyendo aplicación con Maven..."
+                        echo "Construyendo aplicación con Maven..."
                         cd app/backend
                         ./mvnw clean package -DskipTests
                     """
@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        echo "🔹 Construyendo imagen Docker..."
+                        echo "Construyendo imagen Docker..."
                         cd app/backend
                         docker build -t ${DOCKER_IMAGE} .
                     """
@@ -44,13 +44,13 @@ pipeline {
                 withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
                     script {
                         sh """
-                            echo "🔹 Creando archivo .env con variables de entorno..."
+                            echo "Creando archivo .env con variables de entorno..."
                             echo "SUPER_SECRET=\$SUPER_SECRET" > app/backend/.env
 
-                            echo "🔹 Eliminando contenedor anterior si existe..."
+                            echo "Eliminando contenedor anterior si existe..."
                             docker compose -f app/backend/docker-compose.yml down || true
 
-                            echo "🚀 Iniciando la nueva versión..."
+                            echo "Iniciando la nueva versión..."
                             cd app/backend
                             docker compose up -d
                         """
@@ -60,56 +60,3 @@ pipeline {
         }
     }
 }
-
-
-// pipeline {
-//     agent any
-
-//     environment {
-//         APP_NAME = "library-cunoc"
-//         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
-//         REPO_URL = "https://github.com/mromer08/test-jenkins.git"
-//         DEPLOY_PATH = "app/backend/target" // Ruta en tu EC2
-//     }
-
-//     stages {
-//         stage('Checkout Code') {
-//             steps {
-//                 git branch: "main", credentialsId: "github_PAT", url: "${REPO_URL}"
-//             }
-//         }
-
-//         stage('Build Application') {
-//             steps {
-//                 script {
-//                     sh """
-//                         echo "🔹 Construyendo aplicación con Maven..."
-//                         cd app/backend
-//                         ./mvnw clean package -DskipTests
-//                     """
-//                 }
-//             }
-//         }
-
-//        stage('Deploy Application') {
-//             steps {
-//                 withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
-//                     script {
-//                         sh """
-//                             echo "🔹 Deteniendo proceso anterior..."
-//                             pkill -f "${JAR_NAME}" || true
-                            
-
-//                             echo "🔹 Exportando variable de entorno de manera segura..."
-//                             export SUPER_SECRET=\$SUPER_SECRET
-
-//                             echo "🚀 Iniciando la nueva versión..."
-//                             nohup java -jar ${DEPLOY_PATH}/${JAR_NAME} > ${DEPLOY_PATH}/app.log 2>&1 &
-//                         """
-//                     }
-//                 }
-//             }
-//         }
-
-//     }
-// }
