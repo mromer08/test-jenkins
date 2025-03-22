@@ -9,6 +9,6 @@ public class HelloWorldController {
 
     @GetMapping("/ping")
     public String ping() {
-        return "pong";
+        return "pong con modificaciones xd";
     }   
 }

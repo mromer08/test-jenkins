@@ -19,8 +19,8 @@ public class AuthorController {
     private AuthorService authorService;
 
     @GetMapping
-    public List<Author> getAllAuthors() {
-        return authorService.getAllAuthors();
+    public String getAllAuthors() {
+        return "todos";
     }
 
     @GetMapping("/{id}")
