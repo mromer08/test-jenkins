@@ -41,16 +41,16 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                withCredentials([string(credentialsId: 'SUPER_SECRET', variable: 'SUPER_SECRET')]) {
+                withCredentials([file(credentialsId: 'env_file', variable: 'ENV_FILE')]) {
                     script {
                         sh """
-                            echo "Creando archivo .env con variables de entorno..."
-                            echo "SUPER_SECRET=\$SUPER_SECRET" > app/backend/.env
+                            echo "🔹 Copiando archivo .env desde Jenkins..."
+                            cp \$ENV_FILE app/backend/.env
 
-                            echo "Eliminando contenedor anterior si existe..."
+                            echo "🔹 Eliminando contenedor anterior si existe..."
                             docker compose -f app/backend/docker-compose.yml down || true
 
-                            echo "Iniciando la nueva versión..."
+                            echo "🚀 Iniciando la nueva versión..."
                             cd app/backend
                             docker compose up -d
                         """
