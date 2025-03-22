@@ -4,8 +4,8 @@ pipeline {
     environment {
         APP_NAME = "library"
         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
-        DOCKER_IMAGE = "library-app"
-        DOCKER_CONTAINER = "library-container"
+        DOCKER_IMAGE = "library-app2"
+        DOCKER_CONTAINER = "library-container2"
     }
 
     stages {
