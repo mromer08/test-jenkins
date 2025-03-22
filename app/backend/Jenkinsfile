@@ -31,13 +31,14 @@ pipeline {
             steps {
                 script {
                     sh """
-                        echo "Construyendo imagen Docker..."
+                        echo "🔹 Construyendo imagen Docker sin caché..."
                         cd app/backend
-                        docker build -t ${DOCKER_IMAGE} .
+                        docker build --no-cache -t ${DOCKER_IMAGE} .
                     """
                 }
             }
         }
+
 
         stage('Deploy with Docker Compose') {
             steps {
