@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/authors")
@@ -23,7 +24,7 @@ public class AuthorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Author> getAuthorById(@PathVariable String id) {
+    public ResponseEntity<Author> getAuthorById(@PathVariable UUID id) {
         Optional<Author> author = authorService.getAuthorById(id);
         return author.map(ResponseEntity::ok)
                      .orElseGet(() -> ResponseEntity.notFound().build());
@@ -35,7 +36,7 @@ public class AuthorController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAuthor(@PathVariable String id) {
+    public ResponseEntity<Void> deleteAuthor(@PathVariable UUID id) {
         if (authorService.getAuthorById(id).isPresent()) {
             authorService.deleteAuthor(id);
             return ResponseEntity.noContent().build();
