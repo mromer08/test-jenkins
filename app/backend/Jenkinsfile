@@ -27,17 +27,17 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    sh """
-                        echo "🔹 Construyendo imagen Docker sin caché..."
-                        cd app/backend
-                        docker build --no-cache -t ${DOCKER_IMAGE} .
-                    """
-                }
-            }
-        }
+        // stage('Build Docker Image') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo "🔹 Construyendo imagen Docker sin caché..."
+        //                 cd app/backend
+        //                 docker build ${DOCKER_IMAGE} .
+        //             """
+        //         }
+        //     }
+        // }
 
 
         stage('Deploy with Docker Compose') {
@@ -53,7 +53,7 @@ pipeline {
 
                             echo "🚀 Iniciando la nueva versión..."
                             cd app/backend
-                            docker compose up -d
+                            docker compose up --build -d
                         """
                     }
                 }
