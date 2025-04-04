@@ -6,8 +6,6 @@ pipeline {
         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
         DOCKER_IMAGE = "library-app"
         DOCKER_CONTAINER = "library-container"
-        COMPOSE_FILE = ""     // Se define dinámicamente
-        ENV_FILE_PATH = ""    // Se define dinámicamente
     }
 
     stages {
@@ -17,27 +15,11 @@ pipeline {
             }
         }
 
-        stage('Set Environment') {
-            steps {
-                script {
-                    if ("main" == "main") {
-                        COMPOSE_FILE = "docker-compose.prod.yml"
-                        ENV_FILE_PATH = "ENV_FILE_PROD"
-                    } else if (env.BRANCH_NAME == "development") {
-                        COMPOSE_FILE = "docker-compose.dev.yml"
-                        ENV_FILE_PATH = "ENV_FILE_DEV"
-                    } else {
-                        error "❌ Rama ${env.BRANCH_NAME} no soportada para despliegue"
-                    }
-                }
-            }
-        }
-
         stage('Build Application') {
             steps {
                 script {
                     sh """
-                        echo "🔧 Construyendo aplicación con Maven..."
+                        echo "Construyendo aplicación con Maven..."
                         cd app/backend
                         ./mvnw clean package -DskipTests
                     """
@@ -47,18 +29,18 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                withCredentials([file(credentialsId: "${ENV_FILE_PATH}", variable: 'ENV_FILE')]) {
+                withCredentials([file(credentialsId: 'env_file', variable: 'ENV_FILE')]) {
                     script {
                         sh """
-                            echo "📦 Usando archivo de entorno: \$ENV_FILE"
+                            echo "🔹 Copiando archivo .env desde Jenkins..."
                             cp \$ENV_FILE app/backend/.env
 
-                            echo "🧹 Deteniendo y eliminando contenedor anterior..."
-                            docker compose -f app/backend/${COMPOSE_FILE} down || true
+                            echo "🔹 Eliminando contenedor anterior si existe..."
+                            docker compose -f app/backend/docker-compose.yml down || true
 
-                            echo "🚀 Desplegando con ${COMPOSE_FILE}..."
+                            echo "🚀 Iniciando la nueva versión..."
                             cd app/backend
-                            docker compose -f ${COMPOSE_FILE} up --build -d
+                            docker compose up --build -d
                         """
                     }
                 }
