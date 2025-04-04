@@ -18,7 +18,7 @@ pipeline {
         }
 
         stage('Set Environment') {
-            steps {
+            steps { 
                 script {
                     if (env.BRANCH_NAME == "main") {
                         COMPOSE_FILE = "docker-compose.prod.yml"
