@@ -1,78 +1,78 @@
 pipeline {
     agent any
 
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        disableConcurrentBuilds()
+    }
+
     environment {
         APP_NAME = "library"
         JAR_NAME = "library-0.0.1-SNAPSHOT.jar"
-        COMPOSE_FILE = ""     // Se define dinámicamente
-        ENV_FILE_PATH = ""    // Se define dinámicamente
     }
 
     stages {
         stage('Build Application') {
             steps {
-                script {
-                    sh """
-                        echo "🔧 Construyendo aplicación con Maven..."
-                        cd app/backend
-                        ./mvnw clean package -DskipTests
-                    """
+                dir('app/backend') {
+                    timeout(time: 15, unit: 'MINUTES') {
+                        sh './mvnw clean package -DskipTests'
+                    }
+                }
+            }
+            post {
+                failure {
+                    echo "❌ Build falló. Revisar logs."
                 }
             }
         }
 
-        stage('Deploy with Docker Compose for Prod') {
-            when {
-                branch 'main'
-            }
-            environment {
-                COMPOSE_FILE = "docker-compose.prod.yml"
-                ENV_FILE_PATH = "env_file_prod"
-            }
-            steps {
-                withCredentials([file(credentialsId: "${ENV_FILE_PATH}", variable: 'ENV_FILE')]) {
-                    script {
-                        sh """
-                            echo "📦 Usando archivo de entorno: \$ENV_FILE"
-                            cp \$ENV_FILE app/backend/.env
-
-                            echo "🧹 Deteniendo y eliminando contenedor de producción..."
-                            docker compose -p ${APP_NAME}-prod -f app/backend/${COMPOSE_FILE} down || true
-
-                            echo "🚀 Desplegando con ${COMPOSE_FILE}..."
-                            cd app/backend
-                            docker compose -p ${APP_NAME}-prod -f ${COMPOSE_FILE} up --build -d
-                        """
+        stage('Deploy to Production') {
+            when { branch 'main' }
+            steps { script { deployWithDocker('prod', 'docker-compose.prod.yml', 'env_file_prod') } }
+            post {
+                failure {
+                    dir('app/backend') {
+                        sh "docker compose -p ${APP_NAME}-prod -f docker-compose.prod.yml down || true"
                     }
                 }
             }
         }
 
-        stage('Deploy with Docker Compose for Dev') {
-            when {
-                branch 'development'
-            }
-            environment {
-                COMPOSE_FILE = "docker-compose.dev.yml"
-                ENV_FILE_PATH = "env_file_dev"
-            }
-            steps {
-                withCredentials([file(credentialsId: "${ENV_FILE_PATH}", variable: 'ENV_FILE')]) {
-                    script {
-                        sh """
-                            echo "📦 Usando archivo de entorno: \$ENV_FILE"
-                            cp \$ENV_FILE app/backend/.env
+        stage('Deploy to Development') {
+            when { branch 'development' }
+            steps { script { deployWithDocker('dev', 'docker-compose.dev.yml', 'env_file_dev') } }
+        }
+    }
 
-                            echo "🧹 Deteniendo y eliminando contenedor de desarrollo..."
-                            docker compose -p ${APP_NAME}-dev -f app/backend/${COMPOSE_FILE} down || true
+    post {
+        always {
+            echo "Pipeline finalizado - Estado: ${currentBuild.result}"
+        }
+        success {
+            echo "✅ ¡Despliegue exitoso!"
+        }
+        failure {
+            echo "❌ Pipeline falló. Revisar logs."
+        }
+    }
+}
 
-                            echo "🚀 Desplegando con ${COMPOSE_FILE}..."
-                            cd app/backend
-                            docker compose -p ${APP_NAME}-dev -f ${COMPOSE_FILE} up --build -d
-                        """
-                    }
-                }
-            }
+// Función reutilizable para despliegue
+def deployWithDocker(String env, String composeFile, String envFileCredential) {
+    withCredentials([file(credentialsId: envFileCredential, variable: 'ENV_FILE')]) {
+        dir('app/backend') {
+            sh """
+                if [ ! -s "\$ENV_FILE" ]; then
+                    echo "❌ Archivo .env vacío o no existe."
+                    exit 1
+                fi
+                cp \$ENV_FILE .env
+                echo "🧹 Limpiando contenedores antiguos..."
+                docker compose -p ${APP_NAME}-${env} -f ${composeFile} down || true
+                echo "🚀 Desplegando entorno ${env}..."
+                docker compose -p ${APP_NAME}-${env} -f ${composeFile} up --build -d
+            """
         }
     }
 }
