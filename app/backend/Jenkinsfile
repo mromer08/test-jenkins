@@ -22,10 +22,10 @@ pipeline {
                 script {
                     if (env.BRANCH_NAME == "main") {
                         COMPOSE_FILE = "docker-compose.prod.yml"
-                        ENV_FILE_PATH = "env_file_prod"
+                        ENV_FILE_PATH = "ENV_FILE_PROD"
                     } else if (env.BRANCH_NAME == "development") {
                         COMPOSE_FILE = "docker-compose.dev.yml"
-                        ENV_FILE_PATH = "env_file_dev"
+                        ENV_FILE_PATH = "ENV_FILE_DEV"
                     } else {
                         error "❌ Rama ${env.BRANCH_NAME} no soportada para despliegue"
                     }
