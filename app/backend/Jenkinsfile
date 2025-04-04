@@ -13,14 +13,14 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "main", credentialsId: "github_PAT", url: "https://github.com/mromer08/test-jenkins.git"
+                git branch: "${env.BRANCH_NAME}", credentialsId: "github_PAT", url: "https://github.com/mromer08/test-jenkins.git"
             }
         }
 
         stage('Set Environment') {
             steps {
                 script {
-                    if ("main" == "main") {
+                    if (env.BRANCH_NAME == "main") {
                         COMPOSE_FILE = "docker-compose.prod.yml"
                         ENV_FILE_PATH = "env_file_prod"
                     } else if (env.BRANCH_NAME == "development") {
